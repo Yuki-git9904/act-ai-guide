@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f5f7fb">
+<title>アクトAI活用ガイド β版｜東京セントラルRAC</title>
+<style>
+  /* ================= デザイントークン ================= */
+  :root {
+    --primary: #d41367;
+    --primary-dark: #a80e50;
+    --primary-light: #fbe9f1;
+    --primary-pale: #fdf2f7;
+    --bg: #f5f7fb;
+    --card: #ffffff;
+    --text: #1f2733;
+    --muted: #6b7684;
+    --line: #e4e8ef;
+    --green: #22a06b;
+    --green-light: #e6f6ef;
+    --orange: #e8842c;
+    --orange-light: #fdf1e4;
+    --red: #e0455a;
+    --red-light: #fdecef;
+    --gold: #f5b301;
+    --gold-dark: #9e7300;
+    --gold-light: #fef7e0;
+    --radius-card: 20px;
+    --radius-btn: 14px;
+    --shadow: 0 2px 12px rgba(31,39,51,.06);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+  }
+  #app {
+    max-width: 560px; margin: 0 auto;
+    padding: 16px 16px 120px;
+    min-height: 100vh;
+  }
+  .screen { animation: screenIn .22s ease both; }
+  @keyframes screenIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .screen { animation: none; }
+    html { scroll-behavior: auto; }
+  }
+
+  /* ================= 共通部品 ================= */
+  .card {
+    background: var(--card); border-radius: var(--radius-card);
+    box-shadow: var(--shadow); padding: 24px 20px; margin-bottom: 16px;
+  }
+  .cta {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    width: 100%; min-height: 52px;
+    background: var(--primary); color: #fff;
+    border: none; border-radius: var(--radius-btn);
+    font-size: 15px; font-weight: bold; font-family: inherit;
+    cursor: pointer; transition: background .15s, transform .12s, opacity .15s;
+  }
+  .cta:active { transform: scale(.98); }
+  .cta:hover { background: var(--primary-dark); }
+  .cta:disabled { background: #c3cbd8; cursor: not-allowed; transform: none; }
+  .cta .arrow { font-size: 13px; }
+  .cta-sub {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; min-height: 48px;
+    background: var(--card); color: var(--primary);
+    border: 1.5px solid var(--primary); border-radius: var(--radius-btn);
+    font-size: 14px; font-weight: bold; font-family: inherit;
+    cursor: pointer; transition: background .15s;
+  }
+  .cta-sub:hover { background: var(--primary-pale); }
+  .link-center {
+    display: block; text-align: center; color: var(--primary);
+    font-size: 13.5px; font-weight: bold; text-decoration: none;
+    margin-top: 16px; background: none; border: none; cursor: pointer;
+    font-family: inherit; width: 100%;
+  }
+  .back-btn {
+    background: none; border: none; font-size: 22px; color: var(--text);
+    cursor: pointer; padding: 4px 8px; margin: 0 0 4px -8px; line-height: 1;
+    font-family: inherit;
+  }
+  .badge {
+    display: inline-block; font-size: 11px; font-weight: bold;
+    border-radius: 6px; padding: 2px 8px; vertical-align: middle;
+  }
+  .badge-case { background: var(--primary-light); color: var(--primary-dark); }
+  .badge-knowhow { background: var(--green-light); color: var(--green); }
+  .badge-faq { background: var(--orange-light); color: var(--orange); }
+  .badge-check { background: #efe9fb; color: #7a4fd0; }
+  .badge-req { background: var(--red-light); color: var(--red); }
+  .badge-reco { background: var(--gold); color: #fff; }
+
+  /* ================= 診断トップ ================= */
+  .hero { text-align: center; padding-top: 32px; }
+  .hero .club { font-size: 11.5px; letter-spacing: .14em; color: var(--muted); }
+  .hero h1 { font-size: 23px; line-height: 1.5; margin: 12px 0 4px; }
+  .hero .beta {
+    display: inline-block; font-size: 11px; font-weight: bold; color: var(--primary);
+    background: var(--primary-light); border-radius: 99px; padding: 2px 12px; margin-bottom: 12px;
+  }
+  .hero .lead { font-size: 13.5px; color: var(--muted); margin-bottom: 20px; text-align: left; }
+  .hero-illust {
+    width: 100%; max-width: 360px; margin: 0 auto 20px;
+    border-radius: 16px; overflow: hidden;
+  }
+  .hero-illust img {
+    width: 100%; height: auto; display: block;
+  }
+  .hero-meta {
+    display: flex; justify-content: center; gap: 28px; margin-bottom: 24px;
+    font-size: 13px; color: var(--muted);
+  }
+  .hero-meta b { color: var(--text); font-size: 14px; }
+  .hero-meta .ico { color: var(--primary); margin-right: 4px; }
+
+  /* ================= 質問画面 ================= */
+  .stepper {
+    display: flex; align-items: center; justify-content: center;
+    margin: 8px 0 6px;
+  }
+  .step {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: bold;
+    background: #dfe4ec; color: var(--muted);
+    flex: 0 0 auto;
+  }
+  .step.done { background: var(--primary-light); color: var(--primary); }
+  .step.current { background: var(--primary); color: #fff; }
+  .step-line { width: 22px; height: 3px; background: #dfe4ec; flex: 0 0 auto; }
+  .step-line.done { background: var(--primary-light); }
+  .step-count { text-align: center; font-size: 12.5px; color: var(--muted); margin-bottom: 18px; }
+  .q-title { font-size: 18px; font-weight: bold; text-align: center; line-height: 1.6; margin-bottom: 4px; }
+  .q-note { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 18px; }
+  .opts { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .opt {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--card); border: 1.5px solid var(--line);
+    border-radius: var(--radius-btn); padding: 14px;
+    font-size: 14px; font-weight: bold; text-align: left; line-height: 1.5;
+    cursor: pointer; font-family: inherit; color: var(--text);
+    transition: border-color .15s, background .15s;
+  }
+  .opt:active { transform: scale(.99); }
+  .opt .mark {
+    flex: 0 0 20px; height: 20px; border-radius: 50%;
+    border: 2px solid #c3cbd8; position: relative; transition: all .15s;
+  }
+  .opt.multi .mark { border-radius: 6px; }
+  .opt.selected { border-color: var(--primary); background: var(--primary-pale); }
+  .opt.selected .mark { border-color: var(--primary); background: var(--primary); }
+  .opt.selected .mark::after {
+    content: "✓"; color: #fff; font-size: 12px; font-weight: bold;
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  }
+  .stars { display: flex; justify-content: center; gap: 10px; margin: 24px 0 8px; }
+  .star {
+    background: none; border: none; font-size: 38px; cursor: pointer;
+    color: #d5dae2; transition: color .15s, transform .12s; font-family: inherit;
+    line-height: 1; padding: 2px;
+  }
+  .star.on { color: var(--gold); }
+  .star:active { transform: scale(1.15); }
+  .star-label { text-align: center; font-size: 13px; color: var(--muted); min-height: 20px; margin-bottom: 24px; }
+
+  /* ================= 診断結果 ================= */
+  .result-head { text-align: center; padding-top: 8px; }
+  .result-head .caption { font-size: 15px; font-weight: bold; margin-bottom: 16px; }
+  .result-head .pre { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .result-name {
+    font-size: 22px; font-weight: 800; color: var(--primary); line-height: 1.5;
+    margin-bottom: 16px;
+  }
+  .fit-wrap { display: flex; align-items: baseline; justify-content: center; gap: 6px; margin-bottom: 20px; }
+  .fit-label { font-size: 14px; font-weight: bold; }
+  .fit-num { font-size: 52px; font-weight: 800; color: var(--gold-dark); line-height: 1; }
+  .fit-pct { font-size: 20px; font-weight: 800; color: var(--gold-dark); }
+  .reasons { text-align: left; margin: 0 auto 24px; max-width: 420px; }
+  .reasons .r-title { font-size: 14px; font-weight: bold; margin-bottom: 8px; }
+  .reason {
+    display: flex; gap: 8px; font-size: 13.5px; margin-bottom: 6px; line-height: 1.6;
+  }
+  .reason .chk { color: var(--green); font-weight: bold; flex: 0 0 auto; }
+
+  /* ================= ナレッジ一覧 ================= */
+  .page-title { font-size: 19px; font-weight: bold; margin: 8px 0 2px; }
+  .page-sub { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; }
+  .chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; }
+  .chip {
+    flex: 0 0 auto; font-size: 12.5px; font-weight: bold;
+    border-radius: 99px; padding: 6px 14px; cursor: pointer;
+    background: var(--card); color: var(--muted); border: 1px solid var(--line);
+    font-family: inherit; transition: all .15s;
+  }
+  .chip.on { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .k-card {
+    display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
+    background: var(--card); border: none; border-radius: 16px;
+    box-shadow: var(--shadow); padding: 14px; margin-bottom: 10px;
+    cursor: pointer; font-family: inherit; color: var(--text);
+    transition: transform .12s;
+  }
+  .k-card:active { transform: scale(.99); }
+  .k-thumb {
+    flex: 0 0 56px; height: 56px; border-radius: 12px;
+    background: var(--primary-pale);
+    display: flex; align-items: center; justify-content: center; font-size: 26px;
+  }
+  .k-info { flex: 1; min-width: 0; }
+  .k-info .k-title { font-size: 14px; font-weight: bold; line-height: 1.5; display: block; }
+  .k-meta { font-size: 11.5px; color: var(--muted); margin-top: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  /* ================= ナレッジ詳細 ================= */
+  .detail-head { margin-bottom: 4px; }
+  .detail-title { font-size: 20px; font-weight: bold; line-height: 1.55; margin: 8px 0 6px; }
+  .detail-meta { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .detail-hero {
+    height: 120px; border-radius: 16px; background: linear-gradient(120deg, var(--primary-light), var(--primary-pale));
+    display: flex; align-items: center; justify-content: center; font-size: 52px; margin-bottom: 20px;
+  }
+  .detail-body h3 {
+    font-size: 15px; font-weight: bold; margin: 22px 0 8px;
+    padding-left: 10px; border-left: 3px solid var(--primary);
+  }
+  .detail-body p { font-size: 14px; margin-bottom: 10px; }
+  .detail-body ul { padding-left: 20px; font-size: 14px; margin-bottom: 10px; }
+  .detail-body li { margin-bottom: 6px; }
+  .prompt-box {
+    background: #f3f5f9; border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px; font-size: 13px; white-space: pre-wrap;
+    font-family: inherit; margin-bottom: 10px; line-height: 1.7;
+  }
+  .copy-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; min-height: 48px;
+    background: var(--primary); color: #fff; border: none;
+    border-radius: var(--radius-btn); font-size: 14px; font-weight: bold;
+    cursor: pointer; margin-bottom: 10px; font-family: inherit;
+    transition: background .15s, transform .12s;
+  }
+  .copy-btn:hover { background: var(--primary-dark); }
+  .copy-btn:active { transform: scale(.98); }
+  .example {
+    background: var(--green-light); border: 1px solid #c5e8d8; border-radius: 12px;
+    padding: 14px; font-size: 12.5px; white-space: pre-wrap; color: #1d4a37;
+    margin-bottom: 10px; line-height: 1.7;
+  }
+  .example-label { font-size: 11px; font-weight: bold; color: var(--green); margin-bottom: 4px; }
+  .note-box {
+    background: var(--orange-light); border: 1px solid #f3ddc2; border-radius: 12px;
+    padding: 12px 14px; font-size: 12px; color: #8a5518; margin-bottom: 10px;
+  }
+  .check-item {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: var(--card); border: 1.5px solid var(--line); border-radius: 12px;
+    padding: 12px 14px; margin-bottom: 8px; font-size: 13.5px; line-height: 1.6;
+    cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .check-item .box {
+    flex: 0 0 20px; height: 20px; border-radius: 6px; margin-top: 2px;
+    border: 2px solid #c3cbd8; position: relative; transition: all .15s;
+  }
+  .check-item.on { border-color: var(--green); background: var(--green-light); }
+  .check-item.on .box { border-color: var(--green); background: var(--green); }
+  .check-item.on .box::after {
+    content: "✓"; color: #fff; font-size: 12px; font-weight: bold;
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  }
+  .detail-ctas { margin-top: 28px; display: flex; flex-direction: column; gap: 10px; }
+
+  /* ================= アンケート ================= */
+  .sv-title { font-size: 18px; font-weight: bold; text-align: center; margin: 8px 0 4px; }
+  .sv-lead { font-size: 12.5px; color: var(--muted); text-align: center; margin-bottom: 18px; }
+  .sv-q { font-size: 14px; font-weight: bold; margin: 20px 0 10px; }
+  .sv-q .badge { margin-left: 6px; }
+  .sv-free {
+    width: 100%; min-height: 88px; border: 1.5px solid var(--line); border-radius: 12px;
+    padding: 12px; font-size: 14px; font-family: inherit; resize: vertical;
+    background: var(--card); color: var(--text);
+  }
+  .sv-free:focus { outline: none; border-color: var(--primary); }
+  .sv-select {
+    width: 100%; min-height: 48px; border: 1.5px solid var(--line); border-radius: 12px;
+    padding: 0 12px; font-size: 14px; font-family: inherit;
+    background: var(--card); color: var(--text); appearance: none;
+  }
+  .sv-select:focus { outline: none; border-color: var(--primary); }
+  .sv-footer { display: flex; align-items: center; gap: 12px; margin-top: 24px; }
+  .sv-page { font-size: 13px; color: var(--muted); flex: 0 0 auto; }
+  .sv-err { color: var(--red); font-size: 12.5px; margin-top: 10px; display: none; }
+  .sv-err.show { display: block; }
+
+  /* ================= 完了 ================= */
+  .done-wrap { text-align: center; padding-top: 48px; }
+  .done-illust {
+    width: 200px; height: 200px; margin: 0 auto 24px;
+    border-radius: 50%; overflow: hidden;
+  }
+  .done-illust img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .done-title { font-size: 19px; font-weight: bold; margin-bottom: 8px; }
+  .done-sub { font-size: 13.5px; color: var(--muted); margin-bottom: 32px; }
+
+  /* ================= 下部ナビ ================= */
+  #bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;
+    background: var(--card); border-top: 1px solid var(--line);
+    display: none; justify-content: space-around; padding: 8px 0 max(10px, env(safe-area-inset-bottom));
+  }
+  #bottom-nav.visible { display: flex; }
+  .nav-item {
+    background: none; border: none; font-family: inherit; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    font-size: 10.5px; color: var(--muted); min-width: 64px;
+  }
+  .nav-item .n-ico { font-size: 20px; line-height: 1.2; filter: grayscale(1); opacity: .55; }
+  .nav-item.active { color: var(--primary); font-weight: bold; }
+  .nav-item.active .n-ico { filter: none; opacity: 1; }
+
+  /* ================= トースト ================= */
+  .toast {
+    position: fixed; bottom: 84px; left: 50%; transform: translateX(-50%);
+    background: #2b3646; color: #fff; font-size: 13px;
+    padding: 10px 22px; border-radius: 99px; opacity: 0;
+    transition: opacity .3s; pointer-events: none; z-index: 20;
+    box-shadow: 0 4px 16px rgba(31,39,51,.25); white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+
+  footer { text-align: left; font-size: 11px; color: var(--muted); padding: 24px 16px 8px; }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<nav id="bottom-nav">
+  <button class="nav-item" data-nav="top"><span class="n-ico">🏠</span>ホーム</button>
+  <button class="nav-item" data-nav="result"><span class="n-ico">🎯</span>診断結果</button>
+  <button class="nav-item" data-nav="list"><span class="n-ico">📚</span>ナレッジ</button>
+  <button class="nav-item" data-nav="survey1"><span class="n-ico">✅</span>アンケート</button>
+</nav>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+"use strict";
+
+/* ▼▼ 設定：Googleフォーム作成後、ここを差し替えてください ▼▼
+   FORM_CONFIG.baseUrl にフォームの viewform URL、entries に各質問の entry ID を設定すると、
+   アプリ内アンケートの回答が転記された状態でフォームが開きます。
+   未設定の間は FEEDBACK_FORM_URL をそのまま開きます。 */
+var FORM_CONFIG = {
+  baseUrl: "",  // 例: "https://docs.google.com/forms/d/e/XXXX/viewform"
+  entries: {
+    satisfaction: "",  // 例: "entry.1234567890"（今回の診断はいかがでしたか）
+    usefulness: "",    // （診断結果は参考になりましたか）
+    interests: "",     // （今後どのような情報が欲しいですか・複数選択）
+    freeText: "",      // （自由記述）
+    affiliation: ""    // （ご所属）
+  }
+};
+var FEEDBACK_FORM_URL = "https://forms.gle/XXXXXXXXXXXX"; // フォールバック
+/* ▲▲ ここまで ▲▲ */
+
+/* ================= ナレッジデータ ================= */
+var CATS = {
+  "case":    { label: "事例",         badge: "badge-case" },
+  "knowhow": { label: "ノウハウ",     badge: "badge-knowhow" },
+  "faq":     { label: "FAQ",          badge: "badge-faq" },
+  "check":   { label: "チェックリスト", badge: "badge-check" }
+};
+
+var KNOWLEDGE = [
+  {
+    id: "a1", cat: "case", icon: "⚙️", min: 4,
+    title: "定型業務の自動化",
+    sub: "案内メール処理を無人化した設計の始め方",
+    story: "他地区からの行事案内メールの処理を、AIとGoogle Apps Script（GAS）で無人化しました。Gmailを監視→届いたメールの添付ファイルをGoogleドライブに保存→PDF/WordのOCRでテキスト抽出→Gemini APIでテンプレ準拠の案内文を自動生成→Discordに通知、という一連の流れがすべて自動で回ります。処理済みメールにはラベルを付けて二重処理を防止し、動作確認用のテスト関数群や、後任者がそのまま引き継げるREADMEまで整備。",
+    promptNote: "※このプロンプトは「自動化の設計を一緒に考えてもらう」ための壁打ち用です。非エンジニアでも使えます。",
+    prompt: "あなたはノーコード・ローコード自動化の専門家です。次のような繰り返し業務を自動化する方法を、非エンジニアの私にもわかるように一緒に設計してください。\n\n【自動化したい業務】\n◯◯（例：他クラブからの案内メールが届いたら、内容を確認して返信文を作る）\n\n【現在のやり方・頻度・かかっている手間】\n◯◯（例：週に2〜3件、1件あたり15分程度）\n\n【使える環境】\n◯◯（例：Gmail、Googleドライブ、Discordを使っている）\n\n以下の順で回答してください：\n1. どこまで自動化できそうか（全自動／半自動／不可能）の見立て\n2. 必要な工程をステップに分解した設計案\n3. 非エンジニアが実装するときにつまずきやすいポイントと対策",
+    note: "実物（GASコード・READMEなど）は今回のアプリには未掲載です。仕組みの紹介にとどめています。",
+    tips: [
+      "いきなり全自動を目指さない。まず「AIに文章だけ作ってもらう」半自動から始めて、慣れたら自動化の範囲を広げる。",
+      "「テストしてから本番に出す」設計をAIに相談すると、二重送信などの事故を防げる。"
+    ],
+    reasons: ["手作業の繰り返しを仕組みごと無くせる事例です", "仕組みを真似しやすい構成です"]
+  },
+  {
+    id: "b1", cat: "case", icon: "🗂️", min: 4,
+    title: "散らばった情報のナレッジベース化",
+    sub: "4つの情報源を1つの基礎資料にまとめた実例",
+    story: "クラブの沿革や会員構成、活動実績が、Web検索結果・Instagramの投稿履歴・Googleドライブ内の資料・LINEのトーク履歴の4か所にバラバラに散らばっていました。これをAIで横断的に収集・突き合わせ、クラブの沿革・会員・活動・運営を一冊にまとめた基礎資料（Wordファイル）を作成。以降、案内状づくりも引き継ぎ書づくりも、この基礎資料を土台にAIに読ませることで、毎回イチから説明し直す必要がなくなりました。",
+    prompt: "あなたはナレッジベース作成の専門家です。複数の情報源から集めた情報を整理し、団体の基礎資料を作成してください。\n\n【集めた情報】\n◯◯（Web検索結果、SNSの投稿履歴、Driveに保存されているファイル、LINEのやり取りなど、集めた情報を貼り付け）\n\n【まとめたい構成】\n・沿革\n・会員構成\n・年間の活動\n・運営体制\n（↑ 必要に応じて変更してください）\n\n【条件】\n・情報源によって表記が食い違う場合は、どちらが正しいか判断せず「要確認」として一覧にする\n・情報がない項目は空欄のままにし、AIが推測で埋めない",
+    note: "実物は「クラブ基礎資料」としてクラブ内で保管・運用中です。中身の直接引用はこのアプリでは行っていません。",
+    tips: [
+      "一度作ったら終わりにせず、「知識の土台」として以後のAI活用のたびに読み込ませる。",
+      "情報源が多いほど精度が上がる。SNS・LINE・Driveなど、普段見過ごされがちな場所も情報源になる。"
+    ],
+    reasons: ["散らばった情報の整理はAIの得意分野です", "以後のAI活用すべての土台になる事例です"]
+  },
+  {
+    id: "b2", cat: "case", icon: "🔍", min: 3,
+    title: "リサーチ×コンテンツ制作（クイズづくり）",
+    sub: "SNSを巡回調査して出典付きクイズ26問を作成",
+    story: "8つの地区のInstagramをAI（ブラウザ操作型のAI）で実際に巡回調査し、投稿内容をもとに出典付きのクイズを26問作成しました。アカウントが見つからない地区は、名前のパターンを推測して探し当てるところまでAIが実施。調査とコンテンツ化をセットでAIに任せることで、イベントで使える「ちゃんと根拠のあるクイズ」が短時間で用意できました。",
+    prompt: "あなたはクイズ作成の専門家です。以下の調査メモをもとに、イベントで使えるクイズを作成してください。\n\n【調査メモ】\n◯◯（SNSやWebで調べた内容を貼り付け）\n\n【条件】\n・1問ごとに「問題文／選択肢4つ／正解／解説」をセットで作る\n・すべての問題に出典（どの投稿・ページから作ったか）を明記する\n・調査メモにない情報から問題を作らない（推測で補わない）\n・難易度を「やさしい／ふつう／難しい」でラベル付けする",
+    tips: [
+      "「出典を明記して」の一文で、AIの創作クイズを防げる。",
+      "調査そのものをAIに任せる場合は、あとから人間が出典を辿れる形で記録させる。"
+    ],
+    reasons: ["楽しみながらAIリサーチを体験できる事例です", "調査からコンテンツ化までの一気通貫が学べます"]
+  },
+  {
+    id: "c1", cat: "case", icon: "🔄", min: 4,
+    title: "引き継ぎ書の改訂（差分レビュー方式）",
+    sub: "旧版＋複数ログを横断分析して更新する",
+    story: "旧引き継ぎ書に加えて、LINEログ6本・活動振り返りのPDF・会議の文字起こしをAIで横断的に分析し、内容の更新案を作成しました。ただしAIにそのまま書き換えさせるのではなく、「残す・変更する・削除する・追加する」の4分類で色分けした改訂提案を出させ、人間がレビューしてからWordに納品する流れにしています。あわせて、資料中で参照すべきDriveリンクの候補を24箇所探し出し、連絡先が古くなっていないかのWeb検索も行いました。",
+    prompt: "あなたは文書改訂の専門家です。旧版の引き継ぎ書と、その後の変化がわかる資料をもとに、改訂案を作成してください。\n\n【旧引き継ぎ書】\n◯◯（貼り付け）\n\n【その後の変更点がわかる資料】\n◯◯（LINEログ、議事録、振り返りメモなどを貼り付け）\n\n【条件】\n・変更箇所を「残す／変更する／削除する／追加する」の4分類で色分けして提示する\n・それぞれの変更理由を一言添える\n・旧版のどの記述と対応するかがわかるようにする",
+    note: "実物の差分提案そのものはクラブ内部の情報を含むため、このアプリには掲載していません（方式のみ紹介）。",
+    tips: [
+      "一気に全部書き換えさせない。分類ごとに人間がレビューできる粒度で出させるのがポイント。",
+      "「なぜこの変更か」を必ず理由付きで出させると、レビューの判断が速くなる。"
+    ],
+    reasons: ["既存文書を活かしながら安全に更新できる方法です", "人間がレビューしやすい差分方式が学べます"]
+  },
+  {
+    id: "c2", cat: "case", icon: "📘", min: 5,
+    title: "引き継ぎ書の新規作成",
+    sub: "属人化の解消：頭の中にしかない業務を文書化",
+    story: "2025-26年度の会長・幹事業務の引き継ぎ書を、AIと一緒に一から作成しました。地区版の引き継ぎ書を型として流用し、会費体系・手続き・連絡先・メール文例・テンプレートリンクまでを1つの文書に集約。頭の中とメモに散らばっていた業務を棚卸しし、「年度切り替わり時にやること→通年業務→行事対応→会計」の構造に整理しました。失敗すると取り返しがつかない項目（例：My Rotaryの役職者更新を怠るとクラブ情報が抹消される恐れがある）には【重要】の注記を付け、後任がそのまま実行できる手順の粒度まで落とし込んでいます。",
+    prompt: "あなたはクラブ運営の引き継ぎ文書づくりの専門家です。私が書き出した業務メモをもとに、次年度役員向けの「引き継ぎ書」を作成してください。\n\n【条件】\n・構成：業務の目的 → 年度切り替わり時に実施すべきこと → 通年・月次の業務 → 行事・対外対応 → 会計\n・後任が読んだだけで実行できる手順の粒度で書く（ログイン先、操作手順、期限、参照資料）\n・失敗すると影響が大きい項目には【重要】、補足知識には【補足】のラベルを付ける\n・私のメモに書かれていない前提や暗黙知がありそうな箇所は、勝手に補わず「ここを教えてください」と質問リストにする\n・流用できる型（他クラブ・地区の引き継ぎ書など）があれば、それも共有するので活かしてください\n\n【私の業務メモ】\n（ここに箇条書きの棚卸しメモを貼り付け）\n\n【流用する型があれば】\n（ここに貼り付け。なければ省略可）",
+    example: { label: "実物（当クラブの引き継ぎ書より・注記の例）", text: "【重要】会長・幹事・会計が指定されていないと、My Rotaryからクラブ情報が抹消される恐れがある。\n登録手順：My Rotaryにログイン → クラブ管理 → 役職者の任命 → 任期を選択 → 各役職者を登録\n【補足】本引き継ぎ書は今年度の運営実績に基づく。年度ごとに最適なやり方は異なるため、次年度役員で方針を議論し適宜アレンジすること。" },
+    tips: [
+      "いきなり文書を書かせず、まず自分で業務を箇条書きで棚卸しする。AIの仕事は「構造化と穴の指摘」。",
+      "「質問リストにして」の一文が効く。AIが勝手に埋めた\"それらしい嘘\"を防げる。"
+    ],
+    reasons: ["頭の中の業務を文書化する定番の型が学べます", "質問リスト方式でAIの創作を防ぐコツ付きです"]
+  },
+  {
+    id: "d1", cat: "case", icon: "📊", min: 4,
+    title: "例会資料の作成と雛形化",
+    sub: "「1枚1メッセージ」で資料をゼロから完成させる",
+    story: "7月例会での5周年記念式典の進捗報告資料を、AIと一緒に作成しました。伝えたいこと（テーマ・3つの柱・日程調整の進捗・運営体制）を渡すだけで、スライド構成の設計から仕上げまでを一気通貫でAIに任せ、資料そのものには手を加えず、「1枚1メッセージ」で内容を凝縮。報告はわずか2枚に収まりました。さらに、活動振り返りの資料は「他の人が差し替えて使える雛形3パターン」として設計し、以降の例会でも使い回せる形にしています。",
+    prompt: "あなたはプレゼン資料の構成の専門家です。クラブ例会で発表する資料の構成を設計してください。\n\n【発表の前提】\n・場面：◯◯（例：月例会での進捗報告）\n・持ち時間：◯分\n・聞き手：◯◯（例：クラブ会員＋ロータリアン）\n・発表の目的：◯◯（例：進捗の共有と、方針への合意を得る）\n\n【伝えたい内容】\n（ここに伝えたいことを箇条書きで貼り付け）\n\n【条件】\n・スライドは最小限の枚数に凝縮する（1枚1メッセージ）\n・各スライドについて「見出し／本文の要点／図示するならどう見せるか」を提案する\n・聞き手が判断・行動しやすいよう、「共有です」か「ここを決めてほしい」かを各スライドで明確にする\n・複数回使う想定がある場合は、他の人が差し替えて使える雛形として設計する",
+    example: { label: "実例（7月例会・5周年式典の進捗報告）", text: "スライド1：式典テーマと大事にしたい3つの柱（セントラルらしさの追求／学生の参加／参加者全員で作る式典）\nスライド2：進捗報告（開催日程の調整状況・候補日・運営体制）\n→ 伝えることを2枚に凝縮し、「報告」と「これから決めること」を分けて提示。" },
+    tips: [
+      "スライドを書かせる前に「構成案」を出させて、順番と枚数に自分で納得してから中身を作る。",
+      "凝縮を頼むと削りすぎることがある。「これは絶対残す」を先に伝えておく。"
+    ],
+    reasons: ["構成設計から任せる資料づくりの型が学べます", "一度作れば雛形として使い回せます"]
+  },
+  {
+    id: "d2", cat: "case", icon: "🎩", min: 4,
+    title: "来賓の方への招待・依頼文書（2層構造）",
+    sub: "ガバナー・RC会長宛の文書をAIと作成",
+    story: "5周年記念式典へのご臨席依頼で、ガバナー・RC会長宛の文書をAIと作成しました。直接送らず委員会経由で届ける場面だったため、「お取り次ぎをお願いする中間者宛の依頼文」と「そのまま転送できるご本人宛文書」の2層構造で作成。候補日と回答期限は添付ではなく本文中に明記しています。",
+    prompt: "あなたはロータリーの儀礼に詳しい文書作成の専門家です。ローターアクトクラブから来賓の方への依頼文書を作成してください。\n\n【条件】\n・最上級の敬語（ご臨席賜りたく／ご高配のほど 等）を用いる\n・依頼内容・候補日・回答期限などの重要情報は、添付ではなく本文中に明記する\n・相手に直接送らず中間者（委員長等）経由で届ける場合は、「中間者への依頼文」と「転送用のご本人宛文書」の2通に分けて作成する\n\n【依頼内容】\n・差出：◯◯ローターアクトクラブ ◯◯（役職）\n・宛先：◯◯様（役職）\n・経由者：◯◯様（役職）※直接送らない場合のみ\n・用件：◯◯（例：創立◯周年記念式典へのご臨席のお願い）\n・候補日：◯月◯日／◯日／◯日\n・回答期限：◯月◯日（◯）",
+    example: { label: "実例（5周年式典のVIP招待で実際に使った工夫）", text: "ガバナー宛の招待依頼を、①地区委員会の方への「お取り次ぎのお願い」②そのまま転送できる「ガバナー宛のご案内文書」の2層構造で作成。候補日（土曜3日程）と回答期限を本文中に明記し、転送の過程で情報が抜け落ちないようにした。" },
+    tips: [
+      "「誰経由で届くか」を先に決めてからAIに書かせる。経由が変わると文面が変わる。",
+      "出来上がった文書は必ず会長・幹事や顧問の確認を通す（AIは最終責任者ではない）。"
+    ],
+    reasons: ["礼を尽くす場面でのAI活用の実例です", "2層構造など実戦的な工夫がそのまま真似できます"]
+  },
+  {
+    id: "e1", cat: "case", icon: "🧮", min: 3,
+    title: "データ検証・集計",
+    sub: "手動集計のミスをAIで発見した実例",
+    story: "全国規模の大会の参加者名簿（99名・うち懇親会80名）について、手動で行った集計が正しいかをAIに検証してもらいました。AIがプログラムで独立に集計し直して突き合わせた結果、キャンセル扱い1名の数え方の不整合を特定。さらに、公式サイトのクラブ掲載順に合わせた報告文の作成まで一気通貫で行いました。「数える・照合する」はAI＋プログラムがもっとも確実な分野です。",
+    prompt: "あなたはデータ検証の専門家です。以下の集計結果が正しいか、元データから検証してください。\n\n【元データ】\n◯◯（名簿やExcelの内容を貼り付け。氏名などの個人情報は記号に置き換える）\n\n【手動で集計した結果】\n◯◯（例：参加者99名、うち懇親会参加80名）\n\n【条件】\n・元データから独立して集計し直し、手動集計と突き合わせる\n・数が合わない場合は、どの行が原因かを特定して指摘する\n・判断に迷うデータ（表記ゆれ・空欄・キャンセル扱いなど）は「要確認」として一覧にする",
+    tips: [
+      "人間の集計をAIに「答え合わせ」させる使い方が安全で確実。",
+      "名簿を貼るときは氏名を記号化する。検証に個人名は不要。"
+    ],
+    reasons: ["数える・照合する作業はAIがもっとも確実です", "実際にミス1件を特定できた実例です"]
+  },
+  {
+    id: "f1", cat: "case", icon: "📋", min: 4,
+    title: "大型イベント運営の管理伴走",
+    sub: "企画壁打ちから管理資料一式・同期運用まで",
+    story: "地区規模のイベント運営で、企画の壁打ちからタイムスケジュール設計、統合管理Excel（8シート構成）と印刷用の個別ファイルの作成、関係者フィードバックの反映まで、一連のプロジェクト管理をAIと伴走で進めました。名簿CSVの取り込みや参加区分の確定、収支との連動も実施。Googleスプレッドシートをマスタとして他の資料をそこから同期する運用まで、AIと一緒に設計しています。",
+    points: [
+      "企画の壁打ちで決まったことを、その場でタイムスケジュール・管理表に落とし込む",
+      "管理資料はシート構成・項目の段階からAIと設計する（あとから作り直しにならない）",
+      "関係者のフィードバックは、AIに要約と反映案を作らせてから取り込む",
+      "マスタとなる資料を1つ決め、他の資料はそこから同期する運用にする"
+    ],
+    tips: [
+      "「考える（企画）」と「管理する（進行）」を分断しない。壁打ちの結果をすぐ管理物に変換するのがコツ。",
+      "資料が増えるほど同期ミスが起きる。マスタ1つ＋派生、の構造を最初に決める。"
+    ],
+    reasons: ["企画から運用まで伴走させる使い方が学べます", "管理資料一式をAIと構築した実例です"]
+  },
+  {
+    id: "f2", cat: "case", icon: "🎪", min: 4,
+    title: "周年式典の立ち上げ支援",
+    sub: "過去のイベント資料を分析して一連の資料を制作",
+    story: "創立5周年記念式典の立ち上げで、過去の周年式典のナレッジをAIで分析し、準備すべき事項を洗い出しました。そこから方針の叩き台文書・例会発表用プレゼン・副実行委員長への依頼資料まで、立ち上げに必要な一連の資料をAIと制作。ゼロから考えるのではなく「先行事例に学ぶ→自分たちの規模に合わせて再設計する」流れをAIが大幅に加速してくれました。",
+    prompt: "あなたはイベント企画の専門家です。過去のイベント準備資料を分析して、私たちのイベント準備に活かせる形に整理してください。\n\n【過去の準備資料】\n◯◯（過去のイベント準備資料の内容を貼り付け）\n\n【私たちのイベント】\n◯◯（例：創立◯周年記念式典、参加◯名規模、◯月開催）\n\n【条件】\n・資料から「準備すべき項目」を洗い出し、時系列に並べる\n・私たちの規模・目的に合わせて「そのまま使える／調整が必要／不要」に分類する\n・抜けていそうな観点があれば指摘する",
+    tips: [
+      "先行事例は「そのまま真似る」のではなく、AIに自分たちの規模へ翻訳させる。",
+      "洗い出しで終わらせず、叩き台文書・依頼資料など「次に人に見せるもの」まで作り切る。"
+    ],
+    reasons: ["先行事例の分析から立ち上げる方法が学べます", "叩き台から依頼資料まで一連の流れが分かります"]
+  },
+  {
+    id: "g1", cat: "case", icon: "✍️", min: 3,
+    title: "自分の文体を再現する仕組みづくり",
+    sub: "LINE・メールの文面を「自分らしく」自動生成",
+    story: "自分の文体（LINEやメールでの話し方の癖）を再現するための指示文を、LINE用・メール用を統合した形で整備しました。以降は関係者へのLINE連絡文を都度AIに作ってもらったり、プロジェクト機能でナレッジを一元管理したりする運用を続けています。文体プロファイルを一度作っておくと、「この文体で◯◯宛のLINEを書いて」と頼むだけで、自分らしい文面がすぐ作れるようになりました。",
+    note: "※実際の文体プロファイルの中身は非公開です。ここでは仕組みだけをご紹介します。",
+    prompt: "あなたは文章スタイルの分析が得意なアシスタントです。以下の私が過去に書いた文章を読んで、私の文体的な特徴を抽出し、以後この文体で文章を書けるようにしてください。\n\n【過去に書いた文章のサンプル】\n◯◯（LINEやメールの文面を3〜5件貼り付け）\n\n【抽出してほしい観点】\n・一人称\n・語尾の癖\n・絵文字や記号の使い方\n・丁寧さのレベル\n・よく使うフレーズ\n\n抽出できたら、その特徴を一覧にまとめてください。以後は「この文体で◯◯宛のLINEを書いて」と頼むだけで、その文体に沿った文章を作ってもらえます。",
+    tips: [
+      "一度作ったら使い回す。都度ゼロから文体を説明する必要がなくなる。",
+      "「文体プロファイルの中身」自体は非公開にしても、「仕組みがある」ことを共有するだけで十分参考になる。"
+    ],
+    reasons: ["一度作れば毎回の文面づくりが一気に楽になります", "AI初心者でも今日から始めやすい事例です"]
+  },
+  {
+    id: "g2", cat: "case", icon: "🏗️", min: 3,
+    title: "AI環境そのものの仕組み化",
+    sub: "「AIに毎回説明しなくていい状態」を作る",
+    story: "共通ルール（口調・注意事項）、自分の文体、クラブの基礎知識、意思決定の記録を、それぞれファイルにしてプロジェクト別フォルダで管理する構成を作りました。AIが作業を始めるときにこれらを自動で読み込むため、毎回イチから前提を説明する必要がありません。個々の作業を効率化するのではなく、「AI活用そのものの土台」を仕組み化する——いわば仕組み化の仕組み化です。",
+    points: [
+      "共通ルール（望む口調・やってほしくないこと）を1つのファイルにまとめてAIに毎回読ませる",
+      "自分の文体・クラブの基礎知識・意思決定の記録を、それぞれ独立したファイルにする",
+      "プロジェクトごとにフォルダを分け、関連ファイルをセットで管理する",
+      "大きな決定をしたら「決めたこと／理由／採用しなかった案」を記録に追記していく"
+    ],
+    tips: [
+      "最初から完璧な構成を目指さない。ファイル1つ（共通ルール）から始めて育てる。",
+      "「AIに毎回説明しなくていい状態」ができると、他のすべての活用が速くなる。"
+    ],
+    reasons: ["AIに毎回説明しなくていい環境づくりの実例です", "すべてのAI活用を底上げする仕組みの話です"]
+  },
+  {
+    id: "k1", cat: "knowhow", icon: "✉️", min: 3,
+    title: "案内状のひな形づくり",
+    sub: "一度作れば情報の差し替えだけで完成する型",
+    story: "スポンサーRC宛の例会・行事のご案内状を、AIで作成しました。拝啓〜敬具・記書きの型と「登録方法・連絡先まで1枚で完結する」構成をプロンプト化し、以降はイベント情報を差し替えるだけで案内状が作れるように。年度が替わっても使い回せるクラブのひな形になっています。",
+    prompt: "あなたはローターアクトクラブの幹事です。ロータリークラブの会員の皆様宛に、例会の案内状を作成してください。\n\n【条件】\n・拝啓〜敬具の丁寧な書面形式。時候の挨拶を入れる\n・日頃の支援への御礼を冒頭に入れる\n・詳細は「記書き」（記〜以上）でまとめる\n・記書きに含める項目：イベント名／日時／場所（アクセス案内含む）／内容／登録料／登録方法／連絡先\n\n【イベント情報】\n・クラブ名：◯◯ローターアクトクラブ\n・宛先：◯◯ロータリークラブ 会員各位\n・イベント名：◯◯例会\n・日時：◯月◯日（◯）◯時〜◯時\n・場所：◯◯\n・内容：◯◯\n・登録料：◯◯円\n・登録方法：クラブのメールアドレス◯◯宛に、(1)お名前(フリガナ) (2)クラブ名 (3)お役職 の3点を連絡",
+    example: { label: "実物（当クラブの案内状ひな形・冒頭部分）", text: "拝啓\n◯◯の候、◯◯ロータリークラブの皆さまにおかれましては益々ご清祥のこととお慶び申し上げます。また日頃より当クラブの活動に対し温かいご理解とご協力を賜り、厚く御礼申し上げます。\n（中略）\n　　　　　　　　記\nイベント名／日時／場所／例会内容／登録料／登録方法／ご連絡先\n以上" },
+    tips: [
+      "1回作ったらひな形として保存。次回は「この型で、情報だけ差し替えて」で数分で完成。",
+      "生成後、日付・金額・メールアドレスは必ず自分で確認。"
+    ]
+  },
+  {
+    id: "k2", cat: "knowhow", icon: "💡", min: 4,
+    title: "企画の壁打ち→チェックリスト化",
+    sub: "考えるだけで終わらせず、段取りまで落とし込む",
+    story: "5周年記念式典の企画をAIと壁打ちし、テーマ案を3層の意味構造に整理、方針も代替案と比較しながら固めました。さらに考えるだけで終わらせず、会場候補11件の調査・電話確認チェックリスト（受付開始時期での優先度分類、電話の冒頭トーク、会場別の確認事項と結果記入欄つき）まで一気に落とし込みました。",
+    promptNote: "プロンプトは2段階です。①で壁打ちし、決まったら②で段取りに変換します。",
+    prompt: "【プロンプト①：壁打ち用】\nあなたは若手向け社会奉仕団体のイベントプランナーです。私のクラブのイベント企画の壁打ち相手になってください。\n\n【クラブの前提】\n・会員数：◯名（学生と社会人の混成）\n・予算感：◯◯\n・大事にしている文化：◯◯（例：ファミリー感、実質重視）\n\n【企画の目的】\n◯◯（例：参加した学生に入会を検討してもらう）\n\n【今考えている案】\n◯◯\n\n以下の順で回答してください：\n1. 私の案の良い点と弱点（遠慮なく指摘する）\n2. 目的により合う改善案を3つ（それぞれ狙いと懸念も添える）\n3. 私が見落としていそうな論点の指摘\n\n【プロンプト②：段取り・チェックリスト化用】\n上で決まった企画を実行に移します。◯◯（例：会場探し）のための調査チェックリストを作成してください。\n\n【条件】\n・調査対象：◯◯（例：◯名規模・◯月開催の会議室、候補は都内公共施設）\n・対象を「今すぐ動くべきもの／時期が来たら動くもの／随時でよいもの」に分類し、優先順位をつける\n・電話や問い合わせで使う「冒頭の趣旨説明トーク」を作る\n・全候補共通の確認事項と、候補別の個別確認事項を分け、結果記入欄をつける\n・最後に「時系列の推奨アクション」をまとめる",
+    example: { label: "実物（会場調査チェックリストより・電話トークの例）", text: "電話の冒頭で「◯◯ローターアクトクラブと申します。◯月に70〜100名規模の記念式典の会場を探しております」と趣旨を伝えたうえで、共通確認事項（空き状況・料金・設備・キャンセル規定 等）を順に確認する。\n→ 11会場を受付開始時期でA（至急）／B（開始日に要アクション）／C（随時）に分類。" },
+    tips: [
+      "「褒めさせない」のがポイント。「遠慮なく指摘して」と明示すると壁打ちの質が上がる。",
+      "壁打ちで終わらせず、その場で「では調査リストにして」と段取りまで作らせると行動につながる。"
+    ]
+  },
+  {
+    id: "k3", cat: "knowhow", icon: "📝", min: 3,
+    title: "会議メモ→意思決定の記録",
+    sub: "「決めたこと」をクラブの資産にする",
+    story: "当クラブでは、大きな意思決定を「決めたこと／理由／採用しなかった代替案」の形式で記録簿に残す運用をAIと一緒に続けています。打合せの雑多なメモをこの形式に整理するのはAIの得意分野。後から「なぜこうしたんだっけ？」を追えるので、役員交代があっても経緯が引き継がれます。",
+    prompt: "以下の会議メモを、クラブの記録として整理してください。\n\n【出力形式】\n1. 会議情報（日時・参加者・議題）\n2. 決定事項（決めたこと／理由／採用しなかった代替案）\n3. TODO（やること／担当者／期日）※担当・期日がメモから読み取れない場合は「要確認」と書く\n4. 次回への持ち越し事項\n\n【条件】\n・メモにない情報を推測で補わない\n・不明瞭な点は「要確認」として一覧にする\n\n【会議メモ】\n（ここに走り書きメモや文字起こしを貼り付け）",
+    example: { label: "実物（当クラブの記録簿より・形式の例）", text: "決めたこと：5周年式典は華やかさではなく「クラブらしさ」を重視。会場はホテルではなく会議室。\n理由：クラブの本質・カルチャー（ファミリー感、実質重視）を式典の形そのもので体現するため。\n採用しなかった代替案：ホテル等での華やかな式典開催。" },
+    tips: [
+      "「推測で補わない」「不明点は要確認と書く」の2行が精度の鍵。AIの創作を防げる。",
+      "記録は1か所に貯める。次の議論の前にAIに読ませると、過去の経緯を踏まえた壁打ちができる。"
+    ]
+  },
+  {
+    id: "q1", cat: "faq", icon: "❓", min: 2,
+    title: "どのAIを使えばいい？",
+    sub: "無料版で十分です",
+    story: "ChatGPT・Claude・Geminiなど、主要なAIならどれでも大丈夫です。このアプリに載っている事例は、すべて無料で使える範囲で実施したものです。ツール選びに悩む時間より、1つ選んで実際に使ってみる時間のほうがずっと価値があります。",
+    tips: [
+      "まずは1つのAIに慣れる。使い分けは後からで十分。",
+      "同じプロンプトでもAIによって答えの傾向が違う。合わないと感じたら別のAIも試してみる。"
+    ]
+  },
+  {
+    id: "q2", cat: "faq", icon: "🔒", min: 2,
+    title: "個人情報は入れていい？",
+    sub: "入れないのが原則です",
+    story: "個人の電話番号・住所・口座情報・プライベートな事情は、プロンプトに書かないのが原則です。名簿を扱うときは氏名を記号に置き換える、人物は「会長」「幹事」のように役職で表すなど、個人を特定できない形に加工してからAIに渡しましょう。",
+    tips: [
+      "「この情報、他人に見られて困るか？」を入力前にひと呼吸置いて考える。",
+      "検証や集計に個人名は不要なことがほとんど。記号化しても結果は変わらない。"
+    ]
+  },
+  {
+    id: "q3", cat: "faq", icon: "👀", min: 2,
+    title: "AIの出力はそのまま使っていい？",
+    sub: "AIの出力は「下書き」です",
+    story: "AIの出力は優秀な下書きですが、最終確認は必ず人間が行います。特に日付・名前・金額はAIが間違えやすいポイント。ロータリアン宛など来賓の方への文書は、送る前に会長・幹事など然るべき人の確認を通しましょう。送る・出す・投稿する判断は必ず人間がする、が鉄則です。",
+    tips: [
+      "「それらしい嘘」に注意。プロンプトに「推測で補わない」「不明点は要確認と書いて」と入れると防げる。",
+      "対外文書は二重チェック（自分＋もう一人）を習慣に。"
+    ]
+  },
+  {
+    id: "q4", cat: "faq", icon: "🚀", min: 2,
+    title: "何から始めればいい？",
+    sub: "診断結果の事例を1つ、真似るところから",
+    story: "全部を一度にやる必要はありません。診断結果でおすすめされた事例を1つ選んで、プロンプトをコピーして、◯◯の部分を自分のクラブの情報に書き換えて試してみてください。1回うまくいったら、その成果をひな形として保存しておくと、次からがどんどん楽になります。",
+    tips: [
+      "前提（クラブの規模・目的・相手）を渡すほど出力の質が上がる。",
+      "作ったものはひな形として残す。1回の成果を次回の入力にすると、クラブ専用のAI活用が育っていく。"
+    ]
+  },
+  {
+    id: "cl1", cat: "check", icon: "✅", min: 2,
+    title: "AIに頼む前の準備チェックリスト",
+    sub: "この5つを押さえると出力の質が変わる",
+    story: "AIへの指示は「準備8割」。頼む前にこのチェックリストを確認すると、やり直しが減って一発目の出力の質が大きく上がります。",
+    checklist: [
+      "目的とゴールを1文で言えるようにした（誰のため・何のため）",
+      "前提情報（クラブの規模・相手・場面）をまとめた",
+      "参考にしてほしい実物（過去の文書など）を用意した",
+      "「絶対に残したい要素」を先に決めた",
+      "個人情報・プライベートな事情を入力内容から除いた"
+    ],
+    tips: [
+      "チェックが2つ以下なら、まだAIに投げるのは早い。5分だけ準備に使う。"
+    ]
+  },
+  {
+    id: "cl2", cat: "check", icon: "📮", min: 2,
+    title: "対外文書を送る前の最終チェックリスト",
+    sub: "AIで作った文書を外に出す前の5項目",
+    story: "AIで作った対外文書（RC宛・他クラブ宛・来賓の方宛）を送る前の最終確認リストです。AIは形の整った文章を作るのが得意なぶん、細部の誤りが目立ちにくいので、送信前のチェックを習慣にしましょう。",
+    checklist: [
+      "日付・時間・場所・金額を自分の目で確認した",
+      "宛名・敬称・役職が正しいか確認した",
+      "候補日などの重要情報が添付ではなく本文に書かれている",
+      "会長・幹事など然るべき人の確認を通した",
+      "個人の連絡先など載せてはいけない情報がないか最終確認した"
+    ],
+    tips: [
+      "特に「役職の変わり目」（年度替わり）は宛名ミスが起きやすい。要注意。"
+    ]
+  }
+];
+
+/* ================= 診断データ ================= */
+var Q1_OPTIONS = [
+  { t: "毎回の定型作業・事務処理に時間を取られている", w: { a1: 30, e1: 12, f1: 8 }, reason: "「定型作業の削減」を最優先の課題に選んだため" },
+  { t: "情報や資料があちこちに散らばっている", w: { b1: 30, g2: 15, b2: 8 }, reason: "「情報の散在」を最優先の課題に選んだため" },
+  { t: "引き継ぎ・マニュアルが整っていない", w: { c2: 30, c1: 25 }, reason: "「引き継ぎの整備」を最優先の課題に選んだため" },
+  { t: "例会や発表の資料づくりが大変", w: { d1: 30, f2: 8 }, reason: "「資料づくりの負担」を最優先の課題に選んだため" },
+  { t: "文章・連絡文を書くのに時間と気を遣う", w: { g1: 30, d2: 15, e1: 2 }, reason: "「文章づくりの負担」を最優先の課題に選んだため" },
+  { t: "イベントの企画・段取りに手が回らない", w: { f2: 30, f1: 25 }, reason: "「企画・段取り」を最優先の課題に選んだため" }
+];
+var Q2_OPTIONS = [
+  { t: "会長・幹事などの役員", w: { c2: 8, d2: 8, a1: 4 } },
+  { t: "委員長・イベント担当", w: { f1: 8, f2: 8, d1: 4 } },
+  { t: "一般メンバー", w: { g1: 4, b2: 4, d1: 4 } },
+  { t: "学生メンバー", w: { b2: 6, g1: 6, d1: 4 } },
+  { t: "その他・ゲスト", w: { b1: 4, g2: 4, q_dummy: 0 } }
+];
+var Q3_OPTIONS = [
+  { t: "時間の節約", w: { a1: 5, d1: 5, e1: 3 } },
+  { t: "品質アップ・ミス防止", w: { e1: 5, c1: 5, d2: 3 } },
+  { t: "属人化の解消（自分しかできない状態をなくす）", w: { c2: 5, b1: 5, g2: 3 } },
+  { t: "仕組み化・使い回せる型づくり", w: { g2: 5, f1: 5, d1: 3, a1: 3 } },
+  { t: "新しいことへの挑戦・楽しさ", w: { b2: 5, g2: 3, a1: 3 } }
+];
+var Q4_OPTIONS = [
+  { t: "ほぼ使ったことがない", w: { g1: 8, d1: 6, d2: 4 } },
+  { t: "たまに使う", w: { d1: 6, c2: 4, g1: 4 } },
+  { t: "週に数回は使う", w: { b1: 6, c1: 4, e1: 4 } },
+  { t: "ほぼ毎日使っている", w: { a1: 8, g2: 8, f1: 4 } }
+];
+var Q5_LABELS = ["とても不満", "やや不満", "普通", "やや満足", "とても満足"];
+function q5Weights(stars) {
+  if (stars <= 2) return { a1: 8, g2: 6, f1: 4 };
+  if (stars === 3) return { c2: 4, b1: 4 };
+  return { b2: 6, g1: 4, d1: 2 };
+}
+
+/* ================= 状態 ================= */
+var state = {
+  screen: "top",
+  qIndex: 0,
+  answers: { q1: null, q2: null, q3: [], q4: null, q5: 0 },
+  resultId: null,
+  resultFit: null,
+  resultReasons: [],
+  filter: "all",
+  detailId: null,
+  detailFrom: "list",
+  survey: { sat: null, useful: null, interests: [], free: "", aff: "" }
+};
+
+/* ================= スコアリング ================= */
+function computeResult() {
+  var scores = {};
+  KNOWLEDGE.forEach(function (k) { if (k.cat === "case") scores[k.id] = 0; });
+  function add(w) {
+    if (!w) return;
+    Object.keys(w).forEach(function (id) {
+      if (scores.hasOwnProperty(id)) scores[id] += w[id];
+    });
+  }
+  var a = state.answers;
+  if (a.q1 !== null) add(Q1_OPTIONS[a.q1].w);
+  if (a.q2 !== null) add(Q2_OPTIONS[a.q2].w);
+  a.q3.forEach(function (i) { add(Q3_OPTIONS[i].w); });
+  if (a.q4 !== null) add(Q4_OPTIONS[a.q4].w);
+  if (a.q5 > 0) add(q5Weights(a.q5));
+
+  var bestId = null, bestScore = -1;
+  Object.keys(scores).forEach(function (id) {
+    if (scores[id] > bestScore) { bestScore = scores[id]; bestId = id; }
+  });
+  var fit = 70 + Math.round(28 * Math.min(bestScore, 60) / 60);
+
+  var item = KNOWLEDGE.find(function (k) { return k.id === bestId; });
+  var reasons = [];
+  if (a.q1 !== null && Q1_OPTIONS[a.q1].w[bestId]) reasons.push(Q1_OPTIONS[a.q1].reason);
+  item.reasons.forEach(function (r) { if (reasons.length < 3) reasons.push(r); });
+
+  state.resultId = bestId;
+  state.resultFit = fit;
+  state.resultReasons = reasons;
+}
+
+/* ================= ユーティリティ ================= */
+var app = document.getElementById("app");
+var toast = document.getElementById("toast");
+var toastTimer = null;
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { toast.classList.remove("show"); }, 1800);
+}
+function fallbackCopy(text) {
+  var ta = document.createElement("textarea");
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand("copy"); showToast("プロンプトをコピーしました"); }
+  catch (e) { showToast("コピーできませんでした。長押しで選択してください"); }
+  document.body.removeChild(ta);
+}
+function copyText(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(
+      function () { showToast("プロンプトをコピーしました"); },
+      function () { fallbackCopy(text); }
+    );
+  } else {
+    fallbackCopy(text);
+  }
+}
+function esc(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function go(screen) {
+  state.screen = screen;
+  render();
+  window.scrollTo(0, 0);
+}
+
+/* ================= 画面描画 ================= */
+function render() {
+  var html = "";
+  switch (state.screen) {
+    case "top": html = viewTop(); break;
+    case "question": html = viewQuestion(); break;
+    case "result": html = viewResult(); break;
+    case "list": html = viewList(); break;
+    case "detail": html = viewDetail(); break;
+    case "survey1": html = viewSurvey1(); break;
+    case "survey2": html = viewSurvey2(); break;
+    case "done": html = viewDone(); break;
+  }
+  app.innerHTML = '<div class="screen">' + html + "</div>";
+  updateNav();
+  bindScreenEvents();
+}
+
+function updateNav() {
+  var nav = document.getElementById("bottom-nav");
+  var show = ["result", "list", "detail", "survey1", "survey2", "done"].indexOf(state.screen) >= 0;
+  nav.classList.toggle("visible", show);
+  var activeMap = { result: "result", list: "list", detail: "list", survey1: "survey1", survey2: "survey1", done: "survey1", top: "top" };
+  nav.querySelectorAll(".nav-item").forEach(function (b) {
+    b.classList.toggle("active", b.dataset.nav === (activeMap[state.screen] || ""));
+  });
+}
+
+/* ---- 01 診断トップ ---- */
+function viewTop() {
+  return '' +
+    '<div class="hero">' +
+      '<div class="club">東京セントラルローターアクトクラブ</div>' +
+      '<h1>あなたに最適な<br>AI活用事例をご提案します</h1>' +
+      '<span class="beta">アクトAI活用ガイド β版</span>' +
+      '<p class="lead">5つの質問に答えるだけで、あなたの課題に合った<br>クラブ運営×AIの実例と使えるプロンプトをお届けします。</p>' +
+      '<div class="hero-illust"><img src="opening.jpg" alt="東京セントラルRAC集合写真"></div>' +
+      '<div class="hero-meta">' +
+        '<div><span class="ico">🕐</span>所要時間 <b>約1分</b></div>' +
+        '<div><span class="ico">✔️</span>質問数 <b>全5問</b></div>' +
+      '</div>' +
+      '<button class="cta" id="start-btn">診断を開始する <span class="arrow">▶</span></button>' +
+      '<button class="link-center" id="skip-to-list">診断せずにナレッジ一覧を見る →</button>' +
+    '</div>' +
+    '<footer>アクトAI活用ガイド β版（v4）｜東京セントラルローターアクトクラブ<br>掲載事例はすべて実体験にもとづく内容です</footer>';
+}
+
+/* ---- 02-04 質問 ---- */
+function viewQuestion() {
+  var i = state.qIndex;
+  var stepper = '<div class="stepper">';
+  for (var s = 0; s < 5; s++) {
+    var cls = s < i ? "done" : (s === i ? "current" : "");
+    stepper += '<div class="step ' + cls + '">' + (s + 1) + "</div>";
+    if (s < 4) stepper += '<div class="step-line ' + (s < i ? "done" : "") + '"></div>';
+  }
+  stepper += "</div>";
+
+  var head = '<button class="back-btn" id="q-back">←</button>' + stepper +
+    '<div class="step-count">質問 ' + (i + 1) + " / 5</div>";
+
+  var body = "";
+  var a = state.answers;
+  if (i === 0) {
+    body = '<div class="q-title">今、一番AIに任せたい<br>クラブ運営の困りごとは？</div><div class="q-note"></div>' +
+      optList(Q1_OPTIONS, a.q1, false, "q1");
+  } else if (i === 1) {
+    body = '<div class="q-title">クラブでのあなたの立場は？</div><div class="q-note"></div>' +
+      optList(Q2_OPTIONS, a.q2, false, "q2");
+  } else if (i === 2) {
+    body = '<div class="q-title">AI活用で重視したい<br>ポイントは？</div><div class="q-note">（複数選択可）</div>' +
+      optList(Q3_OPTIONS, a.q3, true, "q3");
+  } else if (i === 3) {
+    body = '<div class="q-title">AIをどのくらい<br>使っていますか？</div><div class="q-note"></div>' +
+      optList(Q4_OPTIONS, a.q4, false, "q4");
+  } else {
+    var stars = "";
+    for (var st = 1; st <= 5; st++) {
+      stars += '<button class="star ' + (st <= a.q5 ? "on" : "") + '" data-star="' + st + '">★</button>';
+    }
+    body = '<div class="q-title">今のクラブ運営業務の効率に<br>満足していますか？</div>' +
+      '<div class="stars">' + stars + "</div>" +
+      '<div class="star-label">' + (a.q5 > 0 ? esc(Q5_LABELS[a.q5 - 1]) : "タップして評価") + "</div>";
+  }
+
+  var answered = isAnswered(i);
+  var btnLabel = i === 4 ? "診断する" : "次へ";
+  return head + body +
+    '<button class="cta" id="q-next" ' + (answered ? "" : "disabled") + ">" + btnLabel + ' <span class="arrow">▶</span></button>';
+}
+
+function optList(options, selected, multi, qkey) {
+  var html = '<div class="opts">';
+  options.forEach(function (o, idx) {
+    var sel = multi ? selected.indexOf(idx) >= 0 : selected === idx;
+    html += '<button class="opt ' + (multi ? "multi " : "") + (sel ? "selected" : "") + '" data-q="' + qkey + '" data-idx="' + idx + '">' +
+      '<span class="mark"></span><span>' + esc(o.t) + "</span></button>";
+  });
+  return html + "</div>";
+}
+
+function isAnswered(i) {
+  var a = state.answers;
+  if (i === 0) return a.q1 !== null;
+  if (i === 1) return a.q2 !== null;
+  if (i === 2) return a.q3.length > 0;
+  if (i === 3) return a.q4 !== null;
+  return a.q5 > 0;
+}
+
+/* ---- 05 診断結果 ---- */
+function viewResult() {
+  if (!state.resultId) {
+    return '<div class="card" style="text-align:center;"><p style="font-size:14px;margin-bottom:16px;">まだ診断を行っていません。<br>5つの質問に答えると、あなたに合った事例をご提案します。</p>' +
+      '<button class="cta" id="start-btn">診断を開始する <span class="arrow">▶</span></button></div>';
+  }
+  var item = KNOWLEDGE.find(function (k) { return k.id === state.resultId; });
+  var reasons = state.resultReasons.map(function (r) {
+    return '<div class="reason"><span class="chk">✓</span><span>' + esc(r) + "</span></div>";
+  }).join("");
+  return '' +
+    '<div class="card result-head">' +
+      '<div class="caption">診断結果</div>' +
+      '<div class="pre">あなたにおすすめの事例は</div>' +
+      '<div class="result-name">' + item.icon + " " + esc(item.title) + "</div>" +
+      '<div class="fit-wrap"><span class="fit-label">適合度</span><span class="fit-num">' + state.resultFit + '</span><span class="fit-pct">%</span></div>' +
+      '<div class="reasons"><div class="r-title">おすすめの理由</div>' + reasons + "</div>" +
+      '<button class="cta" id="result-detail">詳しく見る <span class="arrow">▶</span></button>' +
+      '<button class="link-center" id="result-to-list">関連ナレッジ一覧へ →</button>' +
+      '<button class="link-center" id="result-retry" style="color:var(--muted);">もう一度診断する</button>' +
+    "</div>";
+}
+
+/* ---- 06 ナレッジ一覧 ---- */
+function viewList() {
+  var chips = [["all", "すべて"], ["case", "事例"], ["knowhow", "ノウハウ"], ["faq", "FAQ"], ["check", "チェックリスト"]];
+  var chipHtml = chips.map(function (c) {
+    return '<button class="chip ' + (state.filter === c[0] ? "on" : "") + '" data-filter="' + c[0] + '">' + c[1] + "</button>";
+  }).join("");
+
+  var items = KNOWLEDGE.filter(function (k) { return state.filter === "all" || k.cat === state.filter; });
+  var cards = items.map(function (k) {
+    var reco = state.resultId === k.id ? ' <span class="badge badge-reco">おすすめ</span>' : "";
+    return '<button class="k-card" data-id="' + k.id + '">' +
+      '<div class="k-thumb">' + k.icon + "</div>" +
+      '<div class="k-info"><span class="k-title">' + esc(k.title) + reco + "</span>" +
+      '<span class="k-meta"><span class="badge ' + CATS[k.cat].badge + '">' + CATS[k.cat].label + "</span>🕐 " + k.min + "分で読める</span></div>" +
+      "</button>";
+  }).join("");
+
+  var sub = state.resultId ? "あなたの診断結果に基づいたおすすめコンテンツ" : "クラブ運営×AIの実例・ノウハウ集";
+  return '<div class="page-title">関連ナレッジ</div><div class="page-sub">' + sub + "</div>" +
+    '<div class="chips">' + chipHtml + "</div>" + cards +
+    '<footer>すべて実体験にもとづく内容です</footer>';
+}
+
+/* ---- 07 ナレッジ詳細 ---- */
+function viewDetail() {
+  var k = KNOWLEDGE.find(function (x) { return x.id === state.detailId; });
+  if (!k) return viewList();
+  var b = "";
+  b += '<button class="back-btn" id="detail-back">←</button>';
+  b += '<div class="detail-head"><span class="badge ' + CATS[k.cat].badge + '">' + CATS[k.cat].label + "</span>" +
+    '<div class="detail-title">' + esc(k.title) + "</div>" +
+    '<div class="detail-meta">🕐 ' + k.min + "分で読める｜" + esc(k.sub) + "</div></div>";
+  b += '<div class="detail-hero">' + k.icon + "</div>";
+  b += '<div class="detail-body">';
+  b += "<h3>実際にやったこと</h3><p>" + esc(k.story) + "</p>";
+  if (k.points) {
+    b += "<h3>やり方の要点</h3><ul>" + k.points.map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") + "</ul>";
+  }
+  if (k.checklist) {
+    b += "<h3>チェックリスト（タップで確認）</h3>";
+    k.checklist.forEach(function (c, idx) {
+      b += '<div class="check-item" data-check="' + idx + '"><span class="box"></span><span>' + esc(c) + "</span></div>";
+    });
+  }
+  if (k.prompt) {
+    b += "<h3>プロンプト（コピーして使う）</h3>";
+    if (k.promptNote) b += '<p style="font-size:12.5px;color:var(--muted);">' + esc(k.promptNote) + "</p>";
+    b += '<div class="prompt-box" id="prompt-text">' + esc(k.prompt) + "</div>" +
+      '<button class="copy-btn" id="copy-prompt">プロンプトをコピー</button>';
+  }
+  if (k.example) {
+    b += '<div class="example"><div class="example-label">' + esc(k.example.label) + "</div>" + esc(k.example.text) + "</div>";
+  }
+  if (k.note) {
+    b += '<div class="note-box">' + esc(k.note) + "</div>";
+  }
+  if (k.tips) {
+    b += "<h3>コツ</h3><ul>" + k.tips.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") + "</ul>";
+  }
+  b += "</div>";
+  b += '<div class="detail-ctas">' +
+    '<button class="cta-sub" id="detail-to-list">一覧に戻る</button>' +
+    '<button class="cta" id="detail-to-survey">アンケートへ <span class="arrow">▶</span></button>' +
+    (state.resultId ? '<button class="link-center" id="detail-to-result">診断結果へ戻る</button>' : "") +
+    "</div>";
+  return b;
+}
+
+/* ---- 08 アンケート 1/2 ---- */
+var SAT_OPTIONS = ["とても良い", "良い", "普通", "悪い", "とても悪い"];
+var USEFUL_OPTIONS = ["とても参考になった", "参考になった", "普通", "あまり参考にならなかった"];
+function viewSurvey1() {
+  var s = state.survey;
+  function radios(opts, sel, key) {
+    return '<div class="opts">' + opts.map(function (o, idx) {
+      return '<button class="opt ' + (sel === idx ? "selected" : "") + '" data-sv="' + key + '" data-idx="' + idx + '">' +
+        '<span class="mark"></span><span>' + esc(o) + "</span></button>";
+    }).join("") + "</div>";
+  }
+  var ok = s.sat !== null && s.useful !== null;
+  return '<div class="sv-title">アンケートにご協力ください</div>' +
+    '<div class="sv-lead">今後のアプリ改善のため、ご意見をお聞かせください。</div>' +
+    '<div class="sv-q">このアプリはいかがでしたか？ <span class="badge badge-req">必須</span></div>' +
+    radios(SAT_OPTIONS, s.sat, "sat") +
+    '<div class="sv-q">診断結果は参考になりましたか？ <span class="badge badge-req">必須</span></div>' +
+    radios(USEFUL_OPTIONS, s.useful, "useful") +
+    '<div class="sv-err" id="sv-err">必須項目に回答してください</div>' +
+    '<div class="sv-footer"><span class="sv-page">1 / 2</span>' +
+    '<button class="cta" id="sv1-next" ' + (ok ? "" : "disabled") + '>次へ <span class="arrow">▶</span></button></div>';
+}
+
+/* ---- 09 アンケート 2/2 ---- */
+var INTEREST_OPTIONS = ["AI活用事例", "ノウハウ・Tips", "他クラブとの事例共有", "セミナー・イベント情報", "その他"];
+var AFF_OPTIONS = ["東京セントラルRAC会員", "他クラブのローターアクター", "学生ゲスト", "ロータリアン", "その他"];
+function viewSurvey2() {
+  var s = state.survey;
+  var checks = '<div class="opts">' + INTEREST_OPTIONS.map(function (o, idx) {
+    var sel = s.interests.indexOf(idx) >= 0;
+    return '<button class="opt multi ' + (sel ? "selected" : "") + '" data-interest="' + idx + '">' +
+      '<span class="mark"></span><span>' + esc(o) + "</span></button>";
+  }).join("") + "</div>";
+  var affOpts = '<option value="">選択してください</option>' + AFF_OPTIONS.map(function (o) {
+    return '<option value="' + esc(o) + '" ' + (s.aff === o ? "selected" : "") + ">" + esc(o) + "</option>";
+  }).join("");
+  return '<button class="back-btn" id="sv2-back">←</button>' +
+    '<div class="sv-title">もう少しだけ教えてください</div>' +
+    '<div class="sv-lead">残り1画面です。</div>' +
+    '<div class="sv-q">今後、どのような情報が欲しいですか？（複数選択可）</div>' + checks +
+    '<div class="sv-q">ご意見・ご感想（任意）</div>' +
+    '<textarea class="sv-free" id="sv-free" placeholder="「このシーンも欲しい」「ここが分かりにくい」など何でも歓迎です">' + esc(s.free) + "</textarea>" +
+    '<div class="sv-q">ご所属を教えてください（任意）</div>' +
+    '<select class="sv-select" id="sv-aff">' + affOpts + "</select>" +
+    '<div class="sv-footer"><span class="sv-page">2 / 2</span>' +
+    '<button class="cta" id="sv-submit">送信する <span class="arrow">▶</span></button></div>' +
+    '<p style="font-size:11.5px;color:var(--muted);margin-top:12px;">送信ボタンを押すとGoogleフォームが開きます。内容をご確認のうえ、フォーム側で送信を完了してください。</p>';
+}
+
+/* ---- 10 完了 ---- */
+function viewDone() {
+  return '<div class="done-wrap">' +
+    '<div class="done-illust"><img src="ending.jpg" alt="東京セントラルRAC集合写真"></div>' +
+    '<div class="done-title">ご回答ありがとうございました！</div>' +
+    '<div class="done-sub">いただいたご意見は、今後のアプリ改善に<br>活用させていただきます。</div>' +
+    '<button class="cta-sub" id="done-top">トップに戻る</button>' +
+    '<button class="link-center" id="done-list">ナレッジ一覧をもう一度見る →</button>' +
+    "</div>";
+}
+
+/* ================= アンケート送信 ================= */
+function buildFormUrl() {
+  var s = state.survey;
+  if (!FORM_CONFIG.baseUrl) return FEEDBACK_FORM_URL;
+  var params = ["usp=pp_url"];
+  function addParam(entry, value) {
+    if (entry && value) params.push(entry + "=" + encodeURIComponent(value));
+  }
+  addParam(FORM_CONFIG.entries.satisfaction, s.sat !== null ? SAT_OPTIONS[s.sat] : "");
+  addParam(FORM_CONFIG.entries.usefulness, s.useful !== null ? USEFUL_OPTIONS[s.useful] : "");
+  s.interests.forEach(function (i) {
+    addParam(FORM_CONFIG.entries.interests, INTEREST_OPTIONS[i]);
+  });
+  addParam(FORM_CONFIG.entries.freeText, s.free);
+  addParam(FORM_CONFIG.entries.affiliation, s.aff);
+  return FORM_CONFIG.baseUrl + "?" + params.join("&");
+}
+
+/* ================= イベント ================= */
+function bindScreenEvents() {
+  var el;
+
+  // トップ
+  el = document.getElementById("start-btn");
+  if (el) el.addEventListener("click", function () {
+    state.qIndex = 0;
+    go("question");
+  });
+  el = document.getElementById("skip-to-list");
+  if (el) el.addEventListener("click", function () { go("list"); });
+
+  // 質問
+  el = document.getElementById("q-back");
+  if (el) el.addEventListener("click", function () {
+    if (state.qIndex === 0) { go("top"); }
+    else { state.qIndex--; render(); window.scrollTo(0, 0); }
+  });
+  el = document.getElementById("q-next");
+  if (el) el.addEventListener("click", function () {
+    if (!isAnswered(state.qIndex)) return;
+    if (state.qIndex === 4) {
+      computeResult();
+      go("result");
+    } else {
+      state.qIndex++;
+      render(); window.scrollTo(0, 0);
+    }
+  });
+  app.querySelectorAll(".opt[data-q]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var qkey = btn.dataset.q;
+      var idx = parseInt(btn.dataset.idx, 10);
+      if (qkey === "q3") {
+        var pos = state.answers.q3.indexOf(idx);
+        if (pos >= 0) state.answers.q3.splice(pos, 1);
+        else state.answers.q3.push(idx);
+      } else {
+        state.answers[qkey] = idx;
+      }
+      render();
+    });
+  });
+  app.querySelectorAll(".star").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      state.answers.q5 = parseInt(btn.dataset.star, 10);
+      render();
+    });
+  });
+
+  // 結果
+  el = document.getElementById("result-detail");
+  if (el) el.addEventListener("click", function () {
+    state.detailId = state.resultId;
+    state.detailFrom = "result";
+    go("detail");
+  });
+  el = document.getElementById("result-to-list");
+  if (el) el.addEventListener("click", function () { go("list"); });
+  el = document.getElementById("result-retry");
+  if (el) el.addEventListener("click", function () {
+    state.answers = { q1: null, q2: null, q3: [], q4: null, q5: 0 };
+    state.qIndex = 0;
+    go("question");
+  });
+
+  // 一覧
+  app.querySelectorAll(".chip").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      state.filter = btn.dataset.filter;
+      render();
+    });
+  });
+  app.querySelectorAll(".k-card").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      state.detailId = btn.dataset.id;
+      state.detailFrom = "list";
+      go("detail");
+    });
+  });
+
+  // 詳細
+  el = document.getElementById("detail-back");
+  if (el) el.addEventListener("click", function () {
+    go(state.detailFrom === "result" ? "result" : "list");
+  });
+  el = document.getElementById("detail-to-list");
+  if (el) el.addEventListener("click", function () { go("list"); });
+  el = document.getElementById("detail-to-survey");
+  if (el) el.addEventListener("click", function () { go("survey1"); });
+  el = document.getElementById("detail-to-result");
+  if (el) el.addEventListener("click", function () { go("result"); });
+  el = document.getElementById("copy-prompt");
+  if (el) el.addEventListener("click", function () {
+    var k = KNOWLEDGE.find(function (x) { return x.id === state.detailId; });
+    if (k && k.prompt) copyText(k.prompt);
+  });
+  app.querySelectorAll(".check-item").forEach(function (item) {
+    item.addEventListener("click", function () {
+      item.classList.toggle("on");
+    });
+  });
+
+  // アンケート1
+  app.querySelectorAll(".opt[data-sv]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      state.survey[btn.dataset.sv] = parseInt(btn.dataset.idx, 10);
+      render();
+    });
+  });
+  el = document.getElementById("sv1-next");
+  if (el) el.addEventListener("click", function () {
+    if (state.survey.sat === null || state.survey.useful === null) {
+      var err = document.getElementById("sv-err");
+      if (err) err.classList.add("show");
+      return;
+    }
+    go("survey2");
+  });
+
+  // アンケート2
+  el = document.getElementById("sv2-back");
+  if (el) el.addEventListener("click", function () { go("survey1"); });
+  app.querySelectorAll(".opt[data-interest]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var idx = parseInt(btn.dataset.interest, 10);
+      var pos = state.survey.interests.indexOf(idx);
+      if (pos >= 0) state.survey.interests.splice(pos, 1);
+      else state.survey.interests.push(idx);
+      // テキスト入力を保持してから再描画
+      var free = document.getElementById("sv-free");
+      if (free) state.survey.free = free.value;
+      var aff = document.getElementById("sv-aff");
+      if (aff) state.survey.aff = aff.value;
+      render();
+    });
+  });
+  el = document.getElementById("sv-submit");
+  if (el) el.addEventListener("click", function () {
+    var free = document.getElementById("sv-free");
+    if (free) state.survey.free = free.value;
+    var aff = document.getElementById("sv-aff");
+    if (aff) state.survey.aff = aff.value;
+    window.open(buildFormUrl(), "_blank", "noopener");
+    go("done");
+  });
+
+  // 完了
+  el = document.getElementById("done-top");
+  if (el) el.addEventListener("click", function () { go("top"); });
+  el = document.getElementById("done-list");
+  if (el) el.addEventListener("click", function () { go("list"); });
+}
+
+// 下部ナビ
+document.querySelectorAll("#bottom-nav .nav-item").forEach(function (btn) {
+  btn.addEventListener("click", function () {
+    var dest = btn.dataset.nav;
+    if (dest === "result" && !state.resultId) dest = "top";
+    go(dest);
+  });
+});
+
+render();
+</script>
+</body>
+</html>
