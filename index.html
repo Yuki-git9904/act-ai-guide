@@ -352,7 +352,7 @@
   <button class="nav-item" data-nav="top"><span class="n-ico">🏠</span>ホーム</button>
   <button class="nav-item" data-nav="result"><span class="n-ico">🎯</span>診断結果</button>
   <button class="nav-item" data-nav="list"><span class="n-ico">📚</span>ナレッジ</button>
-  <button class="nav-item" data-nav="survey1"><span class="n-ico">✅</span>アンケート</button>
+  <button class="nav-item" data-nav="survey"><span class="n-ico">✅</span>アンケート</button>
 </nav>
 
 <div class="toast" id="toast">コピーしました</div>
@@ -789,9 +789,7 @@ function render() {
     case "result": html = viewResult(); break;
     case "list": html = viewList(); break;
     case "detail": html = viewDetail(); break;
-    case "survey1": html = viewSurvey1(); break;
-    case "survey2": html = viewSurvey2(); break;
-    case "done": html = viewDone(); break;
+    case "survey": html = viewSurvey(); break;
   }
   app.innerHTML = '<div class="screen">' + html + "</div>";
   updateNav();
@@ -800,9 +798,9 @@ function render() {
 
 function updateNav() {
   var nav = document.getElementById("bottom-nav");
-  var show = ["result", "list", "detail", "survey1", "survey2", "done"].indexOf(state.screen) >= 0;
+  var show = ["result", "list", "detail", "survey"].indexOf(state.screen) >= 0;
   nav.classList.toggle("visible", show);
-  var activeMap = { result: "result", list: "list", detail: "list", survey1: "survey1", survey2: "survey1", done: "survey1", top: "top" };
+  var activeMap = { result: "result", list: "list", detail: "list", survey: "survey", top: "top" };
   nav.querySelectorAll(".nav-item").forEach(function (b) {
     b.classList.toggle("active", b.dataset.nav === (activeMap[state.screen] || ""));
   });
@@ -981,82 +979,15 @@ function viewDetail() {
   return b;
 }
 
-/* ---- 08 アンケート 1/2 ---- */
-var SAT_OPTIONS = ["とても良い", "良い", "普通", "悪い", "とても悪い"];
-var USEFUL_OPTIONS = ["とても参考になった", "参考になった", "普通", "あまり参考にならなかった"];
-function viewSurvey1() {
-  var s = state.survey;
-  function radios(opts, sel, key) {
-    return '<div class="opts">' + opts.map(function (o, idx) {
-      return '<button class="opt ' + (sel === idx ? "selected" : "") + '" data-sv="' + key + '" data-idx="' + idx + '">' +
-        '<span class="mark"></span><span>' + esc(o) + "</span></button>";
-    }).join("") + "</div>";
-  }
-  var ok = s.sat !== null && s.useful !== null;
-  return '<div class="sv-title">アンケートにご協力ください</div>' +
-    '<div class="sv-lead">今後のアプリ改善のため、ご意見をお聞かせください。</div>' +
-    '<div class="sv-q">このアプリはいかがでしたか？ <span class="badge badge-req">必須</span></div>' +
-    radios(SAT_OPTIONS, s.sat, "sat") +
-    '<div class="sv-q">診断結果は参考になりましたか？ <span class="badge badge-req">必須</span></div>' +
-    radios(USEFUL_OPTIONS, s.useful, "useful") +
-    '<div class="sv-err" id="sv-err">必須項目に回答してください</div>' +
-    '<div class="sv-footer"><span class="sv-page">1 / 2</span>' +
-    '<button class="cta" id="sv1-next" ' + (ok ? "" : "disabled") + '>次へ <span class="arrow">▶</span></button></div>';
-}
-
-/* ---- 09 アンケート 2/2 ---- */
-var INTEREST_OPTIONS = ["AI活用事例", "ノウハウ・Tips", "他クラブとの事例共有", "セミナー・イベント情報", "その他"];
-var AFF_OPTIONS = ["他クラブのローターアクター", "ロータリアン", "ゲスト", "東京セントラルRAC会員", "その他"];
-function viewSurvey2() {
-  var s = state.survey;
-  var checks = '<div class="opts">' + INTEREST_OPTIONS.map(function (o, idx) {
-    var sel = s.interests.indexOf(idx) >= 0;
-    return '<button class="opt multi ' + (sel ? "selected" : "") + '" data-interest="' + idx + '">' +
-      '<span class="mark"></span><span>' + esc(o) + "</span></button>";
-  }).join("") + "</div>";
-  var affOpts = '<option value="">選択してください</option>' + AFF_OPTIONS.map(function (o) {
-    return '<option value="' + esc(o) + '" ' + (s.aff === o ? "selected" : "") + ">" + esc(o) + "</option>";
-  }).join("");
-  return '<button class="back-btn" id="sv2-back">←</button>' +
-    '<div class="sv-title">もう少しだけ教えてください</div>' +
-    '<div class="sv-lead">残り1画面です。</div>' +
-    '<div class="sv-q">今後、どのような情報が欲しいですか？（複数選択可）</div>' + checks +
-    '<div class="sv-q">ご意見・ご感想（任意）</div>' +
-    '<textarea class="sv-free" id="sv-free" placeholder="「このシーンも欲しい」「ここが分かりにくい」など何でも歓迎です">' + esc(s.free) + "</textarea>" +
-    '<div class="sv-q">ご所属を教えてください（任意）</div>' +
-    '<select class="sv-select" id="sv-aff">' + affOpts + "</select>" +
-    '<div class="sv-footer"><span class="sv-page">2 / 2</span>' +
-    '<button class="cta" id="sv-submit">送信する <span class="arrow">▶</span></button></div>' +
-    '<p style="font-size:11.5px;color:var(--muted);margin-top:12px;">送信ボタンを押すとGoogleフォームが開きます。内容をご確認のうえ、フォーム側で送信を完了してください。</p>';
-}
-
-/* ---- 10 完了 ---- */
-function viewDone() {
+/* ---- 08 アンケート ---- */
+function viewSurvey() {
   return '<div class="done-wrap">' +
     '<div class="done-illust"><img src="ending.jpg" alt="東京セントラルRAC集合写真"></div>' +
-    '<div class="done-title">ご回答ありがとうございました！</div>' +
-    '<div class="done-sub">いただいたご意見は、今後のアプリ改善に<br>活用させていただきます。</div>' +
-    '<button class="cta-sub" id="done-top">トップに戻る</button>' +
-    '<button class="link-center" id="done-list">ナレッジ一覧をもう一度見る →</button>' +
+    '<div class="done-title">アンケートにご協力ください</div>' +
+    '<div class="done-sub">今後のアプリ改善のため、<br>ご意見をお聞かせください。</div>' +
+    '<button class="cta" id="sv-open">アンケートに回答する <span class="arrow">▶</span></button>' +
+    '<button class="link-center" id="sv-to-list">ナレッジ一覧をもう一度見る →</button>' +
     "</div>";
-}
-
-/* ================= アンケート送信 ================= */
-function buildFormUrl() {
-  var s = state.survey;
-  if (!FORM_CONFIG.baseUrl) return FEEDBACK_FORM_URL;
-  var params = ["usp=pp_url"];
-  function addParam(entry, value) {
-    if (entry && value) params.push(entry + "=" + encodeURIComponent(value));
-  }
-  addParam(FORM_CONFIG.entries.satisfaction, s.sat !== null ? SAT_OPTIONS[s.sat] : "");
-  addParam(FORM_CONFIG.entries.usefulness, s.useful !== null ? USEFUL_OPTIONS[s.useful] : "");
-  s.interests.forEach(function (i) {
-    addParam(FORM_CONFIG.entries.interests, INTEREST_OPTIONS[i]);
-  });
-  addParam(FORM_CONFIG.entries.freeText, s.free);
-  addParam(FORM_CONFIG.entries.affiliation, s.aff);
-  return FORM_CONFIG.baseUrl + "?" + params.join("&");
 }
 
 /* ================= イベント ================= */
@@ -1149,7 +1080,7 @@ function bindScreenEvents() {
   el = document.getElementById("detail-to-list");
   if (el) el.addEventListener("click", function () { go("list"); });
   el = document.getElementById("detail-to-survey");
-  if (el) el.addEventListener("click", function () { go("survey1"); });
+  if (el) el.addEventListener("click", function () { go("survey"); });
   el = document.getElementById("detail-to-result");
   if (el) el.addEventListener("click", function () { go("result"); });
   el = document.getElementById("copy-prompt");
@@ -1163,54 +1094,12 @@ function bindScreenEvents() {
     });
   });
 
-  // アンケート1
-  app.querySelectorAll(".opt[data-sv]").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      state.survey[btn.dataset.sv] = parseInt(btn.dataset.idx, 10);
-      render();
-    });
-  });
-  el = document.getElementById("sv1-next");
+  // アンケート
+  el = document.getElementById("sv-open");
   if (el) el.addEventListener("click", function () {
-    if (state.survey.sat === null || state.survey.useful === null) {
-      var err = document.getElementById("sv-err");
-      if (err) err.classList.add("show");
-      return;
-    }
-    go("survey2");
+    window.open(FEEDBACK_FORM_URL, "_blank", "noopener");
   });
-
-  // アンケート2
-  el = document.getElementById("sv2-back");
-  if (el) el.addEventListener("click", function () { go("survey1"); });
-  app.querySelectorAll(".opt[data-interest]").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      var idx = parseInt(btn.dataset.interest, 10);
-      var pos = state.survey.interests.indexOf(idx);
-      if (pos >= 0) state.survey.interests.splice(pos, 1);
-      else state.survey.interests.push(idx);
-      // テキスト入力を保持してから再描画
-      var free = document.getElementById("sv-free");
-      if (free) state.survey.free = free.value;
-      var aff = document.getElementById("sv-aff");
-      if (aff) state.survey.aff = aff.value;
-      render();
-    });
-  });
-  el = document.getElementById("sv-submit");
-  if (el) el.addEventListener("click", function () {
-    var free = document.getElementById("sv-free");
-    if (free) state.survey.free = free.value;
-    var aff = document.getElementById("sv-aff");
-    if (aff) state.survey.aff = aff.value;
-    window.open(buildFormUrl(), "_blank", "noopener");
-    go("done");
-  });
-
-  // 完了
-  el = document.getElementById("done-top");
-  if (el) el.addEventListener("click", function () { go("top"); });
-  el = document.getElementById("done-list");
+  el = document.getElementById("sv-to-list");
   if (el) el.addEventListener("click", function () { go("list"); });
 }
 
