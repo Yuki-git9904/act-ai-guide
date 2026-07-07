@@ -111,7 +111,7 @@
     display: inline-block; font-size: 11px; font-weight: bold; color: var(--primary);
     background: var(--primary-light); border-radius: 99px; padding: 2px 12px; margin-bottom: 12px;
   }
-  .hero .lead { font-size: 13.5px; color: var(--muted); margin-bottom: 20px; text-align: left; }
+  .hero .lead { font-size: 13.5px; color: var(--muted); margin-bottom: 20px; text-align: left; max-width: 360px; margin-left: auto; margin-right: auto; }
   .hero-illust {
     width: 100%; max-width: 360px; margin: 0 auto 20px;
     border-radius: 16px; overflow: hidden;
@@ -341,7 +341,7 @@
   }
   .toast.show { opacity: 1; }
 
-  footer { text-align: left; font-size: 11px; color: var(--muted); padding: 24px 16px 8px; }
+  footer { text-align: left; font-size: 11px; color: var(--muted); padding: 24px 16px 8px; max-width: 480px; margin-left: auto; margin-right: auto; }
 </style>
 </head>
 <body>
@@ -365,16 +365,16 @@
    アプリ内アンケートの回答が転記された状態でフォームが開きます。
    未設定の間は FEEDBACK_FORM_URL をそのまま開きます。 */
 var FORM_CONFIG = {
-  baseUrl: "",  // 例: "https://docs.google.com/forms/d/e/XXXX/viewform"
+  baseUrl: "https://docs.google.com/forms/d/e/1FAIpQLSeFKfm4A_4Dy1g26nwhAT25UByHM7BmPmfYSkxD-cfQuzpyqg/viewform",
   entries: {
-    satisfaction: "",  // 例: "entry.1234567890"（今回の診断はいかがでしたか）
-    usefulness: "",    // （診断結果は参考になりましたか）
-    interests: "",     // （今後どのような情報が欲しいですか・複数選択）
-    freeText: "",      // （自由記述）
-    affiliation: ""    // （ご所属）
+    satisfaction: "entry.1016934255",
+    usefulness: "entry.463006909",
+    interests: "entry.2114160314",
+    freeText: "entry.27017827",
+    affiliation: "entry.519982523"
   }
 };
-var FEEDBACK_FORM_URL = "https://forms.gle/XXXXXXXXXXXX"; // フォールバック
+var FEEDBACK_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeFKfm4A_4Dy1g26nwhAT25UByHM7BmPmfYSkxD-cfQuzpyqg/viewform";
 /* ▲▲ ここまで ▲▲ */
 
 /* ================= ナレッジデータ ================= */
